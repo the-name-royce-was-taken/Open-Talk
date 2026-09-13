@@ -1,0 +1,52 @@
+/* geo.js — IP-based country detection.
+ * - Reveals #voiceRoomsWrap only for users in India.
+ *
+ * Free, no key, no quota: https://get.geojs.io/v1/ip/country.json
+ * Result cached in localStorage for 12 h.
+ */
+(function () {
+    'use strict';
+    var CACHE_KEY = 'ot_geo_v1';
+    var CACHE_MS = 12 * 60 * 60 * 1000;
+
+    function fetchCountry() {
+        try {
+            var raw = localStorage.getItem(CACHE_KEY);
+            if (raw) {
+                var p = JSON.parse(raw);
+                if (p && p.t && Date.now() - p.t < CACHE_MS && p.c) return Promise.resolve(p.c);
+            }
+        } catch (e) { /* ignore */ }
+        return fetch('https://get.geojs.io/v1/ip/country.json', { cache: 'no-store' })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (j) {
+                var c = (j && j.country ? String(j.country) : '').toUpperCase();
+                if (c) {
+                    try { localStorage.setItem(CACHE_KEY, JSON.stringify({ c: c, t: Date.now() })); } catch (e) { }
+                }
+                return c || null;
+            })
+            .catch(function () { return null; });
+    }
+
+    function revealVoiceRoomsIfIndia(country) {
+        var wrap = document.getElementById('voiceRoomsWrap');
+        if (!wrap) return;
+        if (country === 'IN') {
+            wrap.hidden = false;
+        } // else: stays hidden (the default)
+    }
+
+    function init() {
+        fetchCountry().then(function (country) {
+            if (!country) return;
+            revealVoiceRoomsIfIndia(country);
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init, { once: true });
+    } else {
+        init();
+    }
+})();
