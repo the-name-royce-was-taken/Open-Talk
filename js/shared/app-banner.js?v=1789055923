@@ -1,0 +1,41 @@
+/* OpenTalk — smart app banner (mobile only).
+   Shows a slim "Get the App" bar above the topbar on Android phones.
+   Dismissible (remembers in localStorage for 7 days). SEO-neutral:
+   the static <a class="play-badge"> links in HTML are what Google indexes. */
+(function () {
+    // Disabled: the slim "get the app" strip above the topbar felt cheap on
+    // mobile landing pages. Static <a class="play-badge"> links stay for SEO.
+    return;
+    try {
+        var KEY = 'otSabDismissed';
+        var ttl = 7 * 24 * 60 * 60 * 1000;
+        var v = parseInt(localStorage.getItem(KEY) || '0', 10);
+        if (v && Date.now() - v < ttl) return;
+    } catch (e) { }
+
+    var ua = navigator.userAgent || '';
+    var isMobile = /Android|iPhone|iPad/i.test(ua);
+    if (!isMobile) return;
+
+    var url = /Android/i.test(ua)
+        ? 'https://play.google.com/store/apps/details?id=com.jeetproductions.opentalk&utm_source=opentalk.club&utm_medium=smart_banner'
+        : 'https://opentalk.club/'; // iOS app coming via universal link assoc
+
+    var bar = document.createElement('div');
+    bar.className = 'smart-app-banner';
+    bar.innerHTML =
+        '<button class="sab-close" aria-label="Dismiss">×</button>' +
+        '<img src="/images/opentalk.webp" alt="">' +
+        '<div class="sab-text"><strong>OpenTalk</strong><span>Free random video chat — get the app</span></div>' +
+        '<a class="sab-cta" href="' + url + '" rel="noopener">GET</a>';
+
+    bar.querySelector('.sab-close').addEventListener('click', function () {
+        bar.classList.add('is-hidden');
+        try { localStorage.setItem('otSabDismissed', String(Date.now())); } catch (e) { }
+    });
+
+    if (document.body) document.body.insertBefore(bar, document.body.firstChild);
+    else document.addEventListener('DOMContentLoaded', function () {
+        document.body.insertBefore(bar, document.body.firstChild);
+    });
+})();
