@@ -1,0 +1,935 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+
+  <meta name="theme-color" id="metaThemeColor" content="#ffffff">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+
+  <title>OpenTalk — Talk to Strangers with Free Random Video &amp; Text Chat</title>
+  <meta name="description"
+    content="OpenTalk lets you talk to strangers with free random video and text chat. No signup, instant matching, active moderation, and mobile-friendly chat in any browser.">
+  <meta name="keywords"
+    content="opentalk, talk to strangers, random video chat, random text chat, free video chat, anonymous chat online, no signup chat">
+  <link rel="canonical" href="https://opentalk.club/">
+
+  <!-- hreflang language alternates -->
+  <link rel="alternate" hreflang="en" href="https://opentalk.club/">
+  <link rel="alternate" hreflang="es" href="https://opentalk.club/es/">
+  <link rel="alternate" hreflang="pt" href="https://opentalk.club/pt/">
+  <link rel="alternate" hreflang="hi" href="https://opentalk.club/hi/">
+  <link rel="alternate" hreflang="fr" href="https://opentalk.club/fr/">
+  <link rel="alternate" hreflang="de" href="https://opentalk.club/de/">
+  <link rel="alternate" hreflang="ja" href="https://opentalk.club/ja/">
+  <link rel="alternate" hreflang="ko" href="https://opentalk.club/ko/">
+  <link rel="alternate" hreflang="ar" href="https://opentalk.club/ar/">
+  <link rel="alternate" hreflang="x-default" href="https://opentalk.club/">
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://opentalk.club/">
+  <meta property="og:title" content="OpenTalk — Talk to Strangers, Free Random Video &amp; Text Chat">
+  <meta property="og:description"
+    content="Random video and text chat with strangers. Free, no signup, works on any browser.">
+  <meta property="og:image" content="https://opentalk.club/images/opentalk.webp">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"OpenTalk","url":"https://opentalk.club/","applicationCategory":"SocialNetworkingApplication","operatingSystem":"Web, Android, iOS","description":"Free random video and text chat with strangers. An Omegle alternative.","browserRequirements":"Requires modern browser with WebRTC.","featureList":["Random video chat","Anonymous text chat","No signup required","Active moderation","Mobile app available"],"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"aggregateRating":{"@type":"AggregateRating","ratingValue":"4.4","ratingCount":"21000"},"interactionStatistic":{"@type":"InteractionCounter","interactionType":"https://schema.org/UseAction","userInteractionCount":21000}}
+</script>
+  <script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Organization","@id":"https://opentalk.club/#organization","name":"OpenTalk","url":"https://opentalk.club/","logo":"https://opentalk.club/images/opentalk.webp","sameAs":["https://play.google.com/store/apps/details?id=com.jeetproductions.opentalk"]}
+  </script>
+  <link id="cg-style-link" rel="stylesheet" href="/css/shared/consent-gate.css?v=1789055923">
+  <script defer src="/js/shared/consent-gate.js?v=1789055923"></script>
+  <script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebSite","@id":"https://opentalk.club/#website","name":"OpenTalk","url":"https://opentalk.club/","description":"Talk to strangers with free random video and text chat. No signup required."}
+</script>
+  <script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"Is OpenTalk a free Omegle alternative?","acceptedAnswer":{"@type":"Answer","text":"Yes. OpenTalk is 100% free random video and text chat with no account needed."}},
+{"@type":"Question","name":"Why did Omegle shut down?","acceptedAnswer":{"@type":"Answer","text":"Omegle shut down in November 2023 after years of moderation issues. OpenTalk is the modern replacement with active moderation."}},
+{"@type":"Question","name":"Do I need to sign up?","acceptedAnswer":{"@type":"Answer","text":"No. Click Start and you are matched with a random stranger instantly."}},
+{"@type":"Question","name":"Does it work on mobile?","acceptedAnswer":{"@type":"Answer","text":"Yes. OpenTalk runs in any modern browser on phone, tablet or desktop."}},
+{"@type":"Question","name":"Is OpenTalk safe?","acceptedAnswer":{"@type":"Answer","text":"Yes. OpenTalk is 18+ only with active moderation, report button, and automatic banning for harassment—median response time 8 minutes."}},
+{"@type":"Question","name":"What makes OpenTalk different from random chat sites?","acceptedAnswer":{"@type":"Answer","text":"OpenTalk combines instant matching, no-signup chat, and active moderation for safer video and text conversations."}},
+{"@type":"Question","name":"Does OpenTalk work without downloading an app?","acceptedAnswer":{"@type":"Answer","text":"Yes. OpenTalk works in any browser on phone, tablet, or desktop. No app download needed. A Google Play app is also available."}},
+{"@type":"Question","name":"How fast is matching on OpenTalk?","acceptedAnswer":{"@type":"Answer","text":"OpenTalk matches you with a random stranger in under 3 seconds. Instant video, text, and voice chat—no queue, no waiting."}},
+{"@type":"Question","name":"How does OpenTalk work?","acceptedAnswer":{"@type":"Answer","text":"OpenTalk uses WebRTC peer-to-peer technology for live video and audio. No video is stored on servers. Open opentalk.club, click Start Video Chat, and you are live with a random stranger within seconds."}},
+{"@type":"Question","name":"Is OpenTalk like Monkey app or OmeTV?","acceptedAnswer":{"@type":"Answer","text":"Yes. Like Monkey and OmeTV, OpenTalk pairs you instantly with strangers, but it runs in any browser with no download required."}},
+{"@type":"Question","name":"Is there a free version?","acceptedAnswer":{"@type":"Answer","text":"OpenTalk is completely free. Video chat, text chat and voice rooms all require no payment or subscription."}}
+]}
+</script>
+
+  <link rel="icon" href="/images/favicon.ico?v=1789055923">
+  <link rel="apple-touch-icon" href="/images/favicon.ico?v=1789055923">
+  <!-- Font preconnect: parallel load instead of blocking @import chain -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" href="/css/desktop/chat.css?v=1789055923" as="style">
+  <link rel="stylesheet" href="/css/desktop/chat.css?v=1789055923">
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('webRcTheme');
+        if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+        (function () { var m = document.getElementById('metaThemeColor'); if (m) m.setAttribute('content', t === 'dark' ? '#0c2226' : '#ffffff'); })();
+      } catch (e) { }
+    })();
+    // Same-origin: nginx proxies /web/, /stats/, /socket.io/ to the backend.
+    // MUST stay '' so premium entitlement (keyed by fingerprint + backend) is
+    // identical to /video/ and /text/. A separate host (rtc.opentalk.club) hit
+    // a different backend/Redis → entitlement never found → "restore every time".
+    window.WEB_RC_API = '';
+    window.WEB_RC_MODE = 'video';
+    window.OT_RAZORPAY_KEY = 'rzp_live_hFc6p7nmNI1kJx';
+  </script>
+  <script defer src="/js/shared/app-banner.js?v=1789055923"></script>
+  <script defer src="/js/shared/geo.js?v=1789055923"></script>
+  <link rel="stylesheet" href="/css/shared/premium.css?v=1789055923">
+  <script defer src="/js/shared/premium.js?v=1789055923"></script>
+</head>
+
+<body>
+
+  <!-- ============ TOP BAR (brand left, controls right) ============ -->
+  <header class="topbar topbar-landing">
+    <a href="/" class="brand brand-lg">
+      <img src="/images/opentalk.webp" alt="opentalk logo">
+      <span class="brand-text">opentalk</span>
+    </a>
+    <div class="topbar-right">
+      <span class="online"><span class="dot"></span><span id="onlineCount">— online</span></span>
+
+      <!-- Language picker -->
+      <div class="lang-picker" id="langPicker">
+        <button class="lang-btn" id="langBtn" aria-haspopup="listbox" aria-expanded="false"
+          aria-label="Change language">
+          <svg class="lgi" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M2 12h20" />
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+          </svg>
+          <span id="langCode">EN</span>
+          <svg class="lgc" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+        <ul class="lang-menu" id="langMenu" role="listbox" aria-label="Select language">
+          <li role="option"><a href="/" hreflang="en" data-lang="en"><span class="lf">🇬🇧</span> English</a></li>
+          <li role="option"><a href="/es/" hreflang="es" data-lang="es"><span class="lf">🇪🇸</span> Español</a></li>
+          <li role="option"><a href="/pt/" hreflang="pt" data-lang="pt"><span class="lf">🇧🇷</span> Português</a></li>
+          <li role="option"><a href="/hi/" hreflang="hi" data-lang="hi"><span class="lf">🇮🇳</span> हिंदी</a></li>
+          <li role="option"><a href="/fr/" hreflang="fr" data-lang="fr"><span class="lf">🇫🇷</span> Français</a></li>
+          <li role="option"><a href="/de/" hreflang="de" data-lang="de"><span class="lf">🇩🇪</span> Deutsch</a></li>
+          <li role="option"><a href="/ja/" hreflang="ja" data-lang="ja"><span class="lf">🇯🇵</span> 日本語</a></li>
+          <li role="option"><a href="/ko/" hreflang="ko" data-lang="ko"><span class="lf">🇰🇷</span> 한국어</a></li>
+          <li role="option"><a href="/ar/" hreflang="ar" data-lang="ar"><span class="lf">🇸🇦</span> العربية</a></li>
+        </ul>
+      </div>
+
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle theme"></button>
+
+      <!-- Mobile-only menu: collapses language + theme + links behind one tap.
+           Hidden on desktop (CSS); the picks above stay the desktop experience. -->
+      <div class="ham-wrap" id="hamWrap">
+        <button class="ham-btn" id="hamBtn" aria-label="Menu" aria-expanded="false">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <rect y="2" width="16" height="2" rx="1" />
+            <rect y="7" width="16" height="2" rx="1" />
+            <rect y="12" width="16" height="2" rx="1" />
+          </svg>
+        </button>
+        <div class="ham-menu" id="hamMenu" hidden>
+          <button class="ham-item" id="themeToggleMenu" type="button">
+            <span class="ham-ico" id="themeMenuIcon" aria-hidden="true"></span>
+            <span id="themeMenuLabel">Dark mode</span>
+          </button>
+
+          <div class="ham-sep"></div>
+          <div class="ham-label">Language</div>
+          <a href="/" hreflang="en" class="ham-item"><span class="lf">🇬🇧</span> English</a>
+          <a href="/es/" hreflang="es" class="ham-item"><span class="lf">🇪🇸</span> Español</a>
+          <a href="/pt/" hreflang="pt" class="ham-item"><span class="lf">🇧🇷</span> Português</a>
+          <a href="/hi/" hreflang="hi" class="ham-item"><span class="lf">🇮🇳</span> हिंदी</a>
+          <a href="/fr/" hreflang="fr" class="ham-item"><span class="lf">🇫🇷</span> Français</a>
+          <a href="/de/" hreflang="de" class="ham-item"><span class="lf">🇩🇪</span> Deutsch</a>
+          <a href="/ja/" hreflang="ja" class="ham-item"><span class="lf">🇯🇵</span> 日本語</a>
+          <a href="/ko/" hreflang="ko" class="ham-item"><span class="lf">🇰🇷</span> 한국어</a>
+          <a href="/ar/" hreflang="ar" class="ham-item"><span class="lf">🇸🇦</span> العربية</a>
+
+          <div class="ham-sep"></div>
+          <a href="/web-privacy.html" class="ham-item">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+            Privacy Policy
+          </a>
+          <a href="/web-terms.html" class="ham-item">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+            </svg>
+            Terms of Service
+          </a>
+          <a href="/feedback.html" class="ham-item">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+            Feedback
+          </a>
+          <a href="/contact.html" class="ham-item">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+              <polyline points="22,6 12,13 2,6" />
+            </svg>
+            Contact Us
+          </a>
+
+          <div class="ham-social">
+            <a href="https://www.instagram.com/opentalk.club?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
+              class="ham-social-btn ig" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path
+                  d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+              </svg>
+              Instagram
+            </a>
+            <a href="https://whatsapp.com/channel/0029Va9isYR545v0CG9cTr1t" class="ham-social-btn wa" target="_blank"
+              rel="noopener noreferrer" aria-label="WhatsApp Channel">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path
+                  d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+              </svg>
+              WhatsApp
+            </a>
+          </div>
+
+          <div class="ham-sep"></div>
+          <a href="https://play.google.com/store/apps/details?id=com.jeetproductions.opentalk&utm_source=opentalk.club&utm_medium=ham_menu"
+            class="ham-store" target="_blank" rel="noopener noreferrer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M3 20.5v-17c0-.83 1-.83 1.5-.5l15 8.5-15 8.5c-.5.33-1.5.33-1.5-.5z" />
+            </svg>
+            <span>
+              <strong>Google Play</strong>
+              <span>Free · Gender filter</span>
+            </span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ HERO (umingle-style centered card) ============ -->
+  <main class="hero">
+    <div class="hero-card">
+
+      <!-- Mode-specific animations: only the active one is shown.
+           One per mode so each chat type has a unique, eye-catching preview. -->
+      <div class="mode-anim-stage" id="modeAnimStage" aria-hidden="true">
+
+        <!-- ─── TEXT: alternating chat bubbles with typing dots ─── -->
+        <div class="m-anim m-anim-text" data-anim="text">
+          <div class="ma-text-row ma-text-l">
+            <span class="ma-bubble ma-bubble-l">Hey 👋</span>
+          </div>
+          <div class="ma-text-row ma-text-r">
+            <span class="ma-bubble ma-bubble-r">Hi! Where you from?</span>
+          </div>
+          <div class="ma-text-row ma-text-l">
+            <span class="ma-bubble ma-bubble-l ma-typing">
+              <i></i><i></i><i></i>
+            </span>
+          </div>
+        </div>
+
+        <!-- ─── VOICE: mic + sonar rings + equalizer bars ─── -->
+        <div class="m-anim m-anim-voice" data-anim="voice">
+          <div class="ma-eq ma-eq-l">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <div class="ma-mic-wrap">
+            <span class="ma-ring ma-ring-1"></span>
+            <span class="ma-ring ma-ring-2"></span>
+            <span class="ma-ring ma-ring-3"></span>
+            <div class="ma-mic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                <line x1="12" y1="19" x2="12" y2="23" />
+                <line x1="8" y1="23" x2="16" y2="23" />
+              </svg>
+            </div>
+          </div>
+          <div class="ma-eq ma-eq-r">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <!-- ─── VIDEO: two video tiles + connection beam + REC dot ─── -->
+        <div class="m-anim m-anim-video" data-anim="video">
+          <div class="ma-tile ma-tile-a">
+            <div class="ma-avatar ma-avatar-a">
+              <svg viewBox="0 0 32 32" aria-hidden="true">
+                <circle cx="16" cy="12" r="6" />
+                <path d="M4,30 Q16,18 28,30 Z" />
+              </svg>
+            </div>
+            <span class="ma-rec"></span>
+          </div>
+          <div class="ma-beam">
+            <span class="ma-beam-pulse"></span>
+          </div>
+          <div class="ma-tile ma-tile-b">
+            <div class="ma-avatar ma-avatar-b">
+              <svg viewBox="0 0 32 32" aria-hidden="true">
+                <circle cx="16" cy="12" r="6" />
+                <path d="M4,30 Q16,18 28,30 Z" />
+              </svg>
+            </div>
+            <span class="ma-cam">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                stroke-linejoin="round" aria-hidden="true">
+                <path d="M23 7l-7 5 7 5V7z" />
+                <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+              </svg>
+            </span>
+          </div>
+        </div>
+
+      </div>
+
+      <h1>Chat with <span class="accent">Strangers</span></h1>
+
+      <!-- Real-time social proof: just above mode selector -->
+      <div class="hero-live">
+        <span class="hero-live-dot"></span>
+        <span id="heroOnline">&mdash;</span>&thinsp;people chatting right now
+      </div>
+
+      <!-- Chat mode selector: Text / Voice / Video → single gradient CTA -->
+      <div class="mode-select" id="modeSelect" role="group" aria-label="Choose chat mode">
+        <button class="mode-btn" data-mode="text" data-href="/text/" type="button" aria-pressed="false">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+          Text
+        </button>
+        <button class="mode-btn" data-mode="voice" data-href="/stationtalk/" type="button" aria-pressed="false">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+            <line x1="12" y1="19" x2="12" y2="23" />
+            <line x1="8" y1="23" x2="16" y2="23" />
+          </svg>
+          Voice
+        </button>
+        <button class="mode-btn active" data-mode="video" data-href="/video/" type="button" aria-pressed="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M23 7l-7 5 7 5V7z" />
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+          </svg>
+          Video
+        </button>
+      </div>
+      <a class="cta-start" id="startCta" href="/video/">Start Chatting &#8594;</a>
+
+    </div>
+
+    <!-- Below-card: trust pills + SEO lead text grouped as a tight column -->
+    <div class="hero-below">
+      <div class="trust-bar trust-bar-below">
+        <span>⚡ Instant match</span>
+        <span class="tb-sep">&middot;</span>
+        <span>🌍 100+ countries</span>
+        <span class="tb-sep">&middot;</span>
+        <span>🛡️ Moderated</span>
+        <span class="tb-sep">&middot;</span>
+        <span>🆓 No signup</span>
+      </div>
+      <p class="lead">Free random video chat with people around the world &mdash; no signup, no install. The modern
+        Omegle alternative.</p>
+    </div>
+  </main>
+
+  <!-- ============ APP STORY (below hero, outside card) ============ -->
+  <section class="app-promo" aria-label="OpenTalk app">
+    <div class="wrap">
+      <div class="ap-inner">
+        <div class="ap-text">
+          <div class="ap-stat"><span class="ap-num">2M+</span><span class="ap-label">users</span></div>
+          <h2 class="ap-heading">Millions have improved their English with OpenTalk</h2>
+          <p class="ap-body">Practice real conversations with strangers around the globe — no scripts, no classroom.
+            Just authentic talk that builds confidence fast.</p>
+          <a class="ap-play-btn"
+            href="https://play.google.com/store/apps/details?id=com.jeetproductions.opentalk&utm_source=opentalk.club&utm_medium=story"
+            rel="noopener" aria-label="Get OpenTalk on Google Play">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M3 20.5v-17c0-.83 1-.83 1.5-.5l15 8.5-15 8.5c-.5.33-1.5.33-1.5-.5z" />
+            </svg>
+            <span class="pb-text"><span class="pb-small">GET IT ON</span><span class="pb-big">Google Play</span></span>
+          </a>
+        </div>
+        <div class="ap-phones" aria-hidden="true">
+          <!-- Back: light mode screenshot -->
+          <div class="ap-phone ap-phone-back ap-ph-light">
+            <div class="ap-ph-notch ap-ph-notch-light"></div>
+            <div class="ap-ph-screen ap-speak-screen">
+              <div class="ap-online-badge ap-online-light"><span class="ap-online-dot"></span>196 online</div>
+              <div class="ap-speak-icon-wrap ap-icon-light">
+                <svg width="28" height="28" viewBox="0 0 48 48" fill="none" stroke="#228891" stroke-width="2.8"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="18" cy="16" r="7" />
+                  <path d="M6 38c0-6.6 5.4-12 12-12" />
+                  <circle cx="34" cy="34" r="8" stroke="#228891" fill="none" />
+                  <line x1="40" y1="40" x2="45" y2="45" />
+                </svg>
+              </div>
+              <h3 class="ap-speak-title ap-speak-dark-text">Speak Freely</h3>
+              <p class="ap-speak-sub ap-sub-dark">Your identity stays private.<br>Just focus on practicing.</p>
+              <span class="ap-connect-label ap-cl-dark">Connect with</span>
+              <div class="ap-gender-row">
+                <span class="ap-gf-pill ap-gf-active">Anyone</span>
+                <span class="ap-gf-pill ap-gf-light">Female</span>
+                <span class="ap-gf-pill ap-gf-light">Male</span>
+              </div>
+              <div class="ap-start-call-ui">&#128222;&nbsp;Start Call</div>
+            </div>
+          </div>
+          <!-- Front: dark mode screenshot -->
+          <div class="ap-phone ap-phone-front ap-ph-dark">
+            <div class="ap-ph-notch ap-ph-notch-dark"></div>
+            <div class="ap-ph-screen ap-speak-screen">
+              <div class="ap-online-badge ap-online-teal"><span class="ap-online-dot"></span>191 online</div>
+              <div class="ap-speak-icon-wrap ap-icon-dark">
+                <svg width="28" height="28" viewBox="0 0 48 48" fill="none" stroke="#4ab3bd" stroke-width="2.8"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="18" cy="16" r="7" />
+                  <path d="M6 38c0-6.6 5.4-12 12-12" />
+                  <circle cx="34" cy="34" r="8" stroke="#4ab3bd" fill="none" />
+                  <line x1="40" y1="40" x2="45" y2="45" />
+                </svg>
+              </div>
+              <h3 class="ap-speak-title ap-speak-light-text">Speak Freely</h3>
+              <p class="ap-speak-sub ap-sub-light">Your identity stays private.<br>Just focus on practicing.</p>
+              <span class="ap-connect-label ap-cl-light">Connect with</span>
+              <div class="ap-gender-row">
+                <span class="ap-gf-pill ap-gf-active">Anyone</span>
+                <span class="ap-gf-pill ap-gf-dark">Female</span>
+                <span class="ap-gf-pill ap-gf-dark">Male</span>
+              </div>
+              <div class="ap-start-call-ui">&#128222;&nbsp;Start Call</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ VIDEO CHAT STORY (image left, text right) ============ -->
+  <section class="vidchat-story" aria-label="Random video chat">
+    <div class="wrap">
+      <div class="vcs-inner">
+
+        <!-- Left: actual chat UI mockup -->
+        <div class="vcs-preview-wrap" aria-hidden="true">
+          <div class="vcs-browser">
+            <div class="vcs-chrome">
+              <div class="vcs-dots"><span></span><span></span><span></span></div>
+              <div class="vcs-url">opentalk.club/video/</div>
+            </div>
+            <div class="vcs-screen">
+              <div class="vcs-topbar">
+                <div class="vcs-tb-logo">
+                  <div class="vcs-tb-orb">talk</div><span>opentalk</span>
+                </div>
+                <div class="vcs-tb-mode"><span>Text</span><span class="vcs-tp-active">Video</span></div>
+              </div>
+              <div class="vcs-app-mock">
+                <!-- Narrow video column (left) -->
+                <div class="vcs-vm-vcol">
+                  <div class="vcs-vm-tile vcs-vm-partner">
+                    <div class="vcs-blur vcs-blur-b"></div>
+                    <div class="vcs-av"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="rgba(255,255,255,.65)" stroke-width="1.6" stroke-linecap="round">
+                        <circle cx="12" cy="8" r="4" />
+                        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+                      </svg></div>
+                    <span class="vcs-tag">Stranger</span>
+                  </div>
+                  <div class="vcs-vm-tile vcs-vm-self">
+                    <div class="vcs-blur vcs-blur-a"></div>
+                    <div class="vcs-av"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="rgba(255,255,255,.65)" stroke-width="1.6" stroke-linecap="round">
+                        <circle cx="12" cy="8" r="4" />
+                        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+                      </svg></div>
+                    <span class="vcs-tag">You</span>
+                  </div>
+                </div>
+                <!-- Wider chat column (right) -->
+                <div class="vcs-vm-ccol">
+                  <div class="vcs-vm-msgs">
+                    <div class="vcs-vm-promo">
+                      <div class="vcs-tb-orb vcs-vm-promo-orb">talk</div>
+                      <div>
+                        <div class="vcs-vm-promo-name">OpenTalk App</div>
+                        <div class="vcs-vm-promo-sub">The better way to meet people</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="vcs-vm-irow">
+                    <span class="vcs-vm-start">Start</span>
+                    <span class="vcs-vm-input"></span>
+                    <span class="vcs-vm-send">➤</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: story text -->
+        <div class="vcs-text">
+          <div class="vcs-badge">&#127909; Random Video Chat</div>
+          <h2 class="vcs-heading">The Omegle alternative that never went away</h2>
+          <p class="vcs-body">When Omegle shut down in 2023, millions of people lost their go-to random video chat.
+            OpenTalk stepped in &mdash; same thrill of meeting a stranger, but safer, faster, and always free.</p>
+          <ul class="vcs-features">
+            <li><span class="vcs-check">&#10003;</span> Open browser, click Start &mdash; you're live in seconds</li>
+            <li><span class="vcs-check">&#10003;</span> 100+ countries, matched in real time</li>
+            <li><span class="vcs-check">&#10003;</span> AI &amp; human moderation — safer than Omegle ever was</li>
+            <li><span class="vcs-check">&#10003;</span> No account, no download, no credit card</li>
+            <li><span class="vcs-check">&#10003;</span> Text, Voice, or Video — switch any time</li>
+          </ul>
+          <a class="vcs-cta" href="/video/">Start Random Chat &#8594;</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SEO COMPARISON ============ -->
+  <section class="seo">
+    <div class="wrap">
+      <h2>opentalk vs Chatroulette / Monkey / OmeTV</h2>
+      <p style="font-size:14px;color:var(--text-2);margin:0 0 14px">Omegle shut down in November 2023. Here&rsquo;s how
+        opentalk compares to the active alternatives.</p>
+      <div style="overflow-x:auto">
+        <table class="compare-tbl">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>opentalk</th>
+              <th>Chatroulette</th>
+              <th>Monkey</th>
+              <th>OmeTV</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Free random video chat</td>
+              <td class="yes">Yes</td>
+              <td class="partial">Limited</td>
+              <td class="yes">Yes</td>
+              <td class="yes">Yes</td>
+            </tr>
+            <tr>
+              <td>Works in browser</td>
+              <td class="yes">Yes</td>
+              <td class="yes">Yes</td>
+              <td class="no">App only</td>
+              <td class="yes">Yes</td>
+            </tr>
+            <tr>
+              <td>No signup required</td>
+              <td class="yes">Yes</td>
+              <td class="yes">Yes</td>
+              <td class="no">Required</td>
+              <td class="yes">Yes</td>
+            </tr>
+            <tr>
+              <td>Active moderation</td>
+              <td class="yes">Yes</td>
+              <td class="partial">Basic</td>
+              <td class="yes">Yes</td>
+              <td class="partial">Basic</td>
+            </tr>
+            <tr>
+              <td>No ads</td>
+              <td class="yes">Yes</td>
+              <td class="no">Has ads</td>
+              <td class="no">Has ads</td>
+              <td class="no">Has ads</td>
+            </tr>
+            <tr>
+              <td>Available on Google Play</td>
+              <td class="yes">Yes</td>
+              <td class="no">No</td>
+              <td class="yes">Yes</td>
+              <td class="yes">Yes</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="compare-note">Omegle shut down Nov 2023. <a href="/omegle-alternative/">Find the best Omegle
+          alternatives &rarr;</a></p>
+    </div>
+  </section>
+
+  <!-- ============ FAQ ============ -->
+  <section class="seo faq">
+    <div class="wrap">
+      <h2><strong>Frequently Asked Questions</strong></h2>
+      <details>
+        <summary>Is opentalk a free Omegle alternative?</summary>
+        <p>Yes. opentalk is a 100% free Omegle alternative — random video and text chat with strangers, no signup
+          required.</p>
+      </details>
+      <details>
+        <summary>Why did Omegle shut down?</summary>
+        <p>Omegle shut down in November 2023 after years of moderation issues. opentalk is built as a safer modern
+          replacement with active moderation and an instant report system.</p>
+      </details>
+      <details>
+        <summary>Is opentalk like Monkey app or OmeTV?</summary>
+        <p>Yes. Like Monkey app and OmeTV, opentalk pairs you instantly with random strangers — but it works in any
+          browser, no download needed.</p>
+      </details>
+      <details>
+        <summary>How is opentalk different from Omegle?</summary>
+        <p>opentalk has active moderation, an instant report button, and auto-bans for abusive users — the things Omegle
+          was missing.</p>
+      </details>
+      <details>
+        <summary>Does it work on mobile?</summary>
+        <p>Yes. It runs in any modern mobile browser, and opentalk is also available on the Google Play Store as a
+          native app.</p>
+      </details>
+      <details>
+        <summary>Do I need an account?</summary>
+        <p>No. Tap Start and you're matched with a random stranger instantly — fully anonymous.</p>
+      </details>
+      <details>
+        <summary>Is opentalk safe to use?</summary>
+        <p>opentalk is designed for users 18 and older. Every chat session has an instant one-tap report button.
+          Reported users are automatically reviewed and banned within minutes. It is the most actively moderated
+          free random chat site available.</p>
+      </details>
+      <details>
+        <summary>How does opentalk work?</summary>
+        <p>opentalk uses WebRTC — the same peer-to-peer technology powering Google Meet and Zoom — for live
+          video and audio. No servers store your video stream. Open opentalk.club, click Start Video Chat, and
+          within seconds you are live with a random stranger from anywhere in the world.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ============ FEATURED BLOG POSTS (Authority + Internal Linking) ============ -->
+  <section class="blog-section"
+    style="max-width: 1200px; margin: 60px auto; padding: 40px 20px; background: linear-gradient(135deg, rgba(74, 179, 189, 0.04), rgba(74, 179, 189, 0.08)); border-radius: 20px;">
+    <h2 style="text-align: center; font-size: 28px; font-weight: 600; margin-bottom: 12px; color: var(--text);">Why
+      OpenTalk is the Best Omegle Alternative</h2>
+    <p
+      style="text-align: center; color: var(--muted); margin-bottom: 40px; font-size: 15px; max-width: 700px; margin-left: auto; margin-right: auto;">
+      Data-driven research from our moderation team and user community on platform safety, market trends, and what users
+      actually want post-Omegle.</p>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+      <article
+        style="background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 24px; display: flex; flex-direction: column; transition: all 0.2s ease;"
+        onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 20px rgba(74,179,189,0.15)';"
+        onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+        <div style="font-size: 24px; margin-bottom: 12px;">📊</div>
+        <h3 style="font-size: 18px; color: var(--text); margin: 0 0 12px 0; line-height: 1.3; font-weight: 600;">
+          <a href="/blog/post-omegle-user-safety-report-2026/" style="color: inherit; text-decoration: none;">
+            Post-Omegle User Safety Report 2026
+          </a>
+        </h3>
+        <p style="color: var(--text-2); font-size: 14px; margin: 0 0 16px 0; flex-grow: 1; line-height: 1.5;">Where 65M
+          displaced Omegle users went and what they demand from the next <a href="/omegle-alternative/"
+            style="color: var(--primary); text-decoration: none; font-weight: 600;">free omegle alternative</a>. 50,000+
+          user survey with data-driven insights.</p>
+        <a href="/blog/post-omegle-user-safety-report-2026/"
+          style="color: var(--primary); font-weight: 600; font-size: 14px; text-decoration: none;">Read report →</a>
+      </article>
+      <article
+        style="background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 24px; display: flex; flex-direction: column; transition: all 0.2s ease;"
+        onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 20px rgba(74,179,189,0.15)';"
+        onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+        <div style="font-size: 24px; margin-bottom: 12px;">🛡️</div>
+        <h3 style="font-size: 18px; color: var(--text); margin: 0 0 12px 0; line-height: 1.3; font-weight: 600;">
+          <a href="/blog/moderation-transparency-report-2026/" style="color: inherit; text-decoration: none;">
+            Moderation Transparency Report Q2 2026
+          </a>
+        </h3>
+        <p style="color: var(--text-2); font-size: 14px; margin: 0 0 16px 0; flex-grow: 1; line-height: 1.5;">First
+          industry moderation transparency report: 487K decisions, 18.4K permanent bans, 0.8% false positive rate.
+          Setting the standard for <a href="/omegle-alternative/"
+            style="color: var(--primary); text-decoration: none; font-weight: 600;">safe random chat</a>.</p>
+        <a href="/blog/moderation-transparency-report-2026/"
+          style="color: var(--primary); font-weight: 600; font-size: 14px; text-decoration: none;">Read report →</a>
+      </article>
+      <article
+        style="background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 24px; display: flex; flex-direction: column; transition: all 0.2s ease;"
+        onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 20px rgba(74,179,189,0.15)';"
+        onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+        <div style="font-size: 24px; margin-bottom: 12px;">📈</div>
+        <h3 style="font-size: 18px; color: var(--text); margin: 0 0 12px 0; line-height: 1.3; font-weight: 600;">
+          <a href="/blog/state-of-random-chat-2026/" style="color: inherit; text-decoration: none;">
+            State of Random Chat 2026: Market Analysis
+          </a>
+        </h3>
+        <p style="color: var(--text-2); font-size: 14px; margin: 0 0 16px 0; flex-grow: 1; line-height: 1.5;">
+          Post-Omegle market recovery: 380M users, +23% YoY growth. How safety-first platforms like <a
+            href="/omegle-alternative/" style="color: var(--primary); text-decoration: none; font-weight: 600;">OpenTalk
+            are winning</a> over legacy competitors.</p>
+        <a href="/blog/state-of-random-chat-2026/"
+          style="color: var(--primary); font-weight: 600; font-size: 14px; text-decoration: none;">Read analysis →</a>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-foot">
+    <div class="foot-grid">
+      <div class="foot-col">
+        <h4 class="foot-head">Alternatives</h4>
+        <a href="/omegle-alternative/">Omegle alternative</a>
+        <a href="/best-omegle-alternative/">Best Omegle alternative</a>
+        <a href="/free-omegle-alternative/">Free Omegle alternative</a>
+        <a href="/safe-omegle-alternative/">Safe Omegle alternative</a>
+        <a href="/top-omegle-alternatives/">Top 8 alternatives</a>
+        <a href="/omegle-alternative-without-download/">No download</a>
+      </div>
+      <div class="foot-col">
+        <h4 class="foot-head">Features</h4>
+        <a href="/free-video-chat/">Free video chat</a>
+        <a href="/anonymous-chat/">Anonymous chat</a>
+        <a href="/talk-to-strangers/">Talk to strangers</a>
+        <a href="/random-chat-no-signup/">No signup random chat</a>
+        <a href="/omegle-alternative-no-signup/">No signup Omegle</a>
+        <a href="/omegle-alternative-for-video-chat/">Video chat</a>
+      </div>
+      <div class="foot-col">
+        <h4 class="foot-head">Compare</h4>
+        <a href="/monkey-app-alternative/">Monkey alternative</a>
+        <a href="/ometv-alternative/">OmeTV alternative</a>
+        <a href="/chatroulette-alternative/">Chatroulette alternative</a>
+        <a href="/omegle-alternative-for-text-chat/">Text chat alternative</a>
+        <a href="/chatroulette-vs-opentalk/">Chatroulette vs opentalk</a>
+        <a href="/talk-with-stranger/">Talk with strangers</a>
+      </div>
+      <div class="foot-col">
+        <h4 class="foot-head">opentalk</h4>
+        <a href="/blog.html">Blog</a>
+        <a href="https://play.google.com/store/apps/details?id=com.jeetproductions.opentalk" rel="noopener">Android
+          App</a>
+        <a href="/privacy.html">Privacy Policy</a>
+        <a href="/terms.html">Terms of Service</a>
+        <a href="/accountdelete.html">Delete account</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <p>&copy; 2026 opentalk</p>
+      <small>opentalk is not affiliated with Omegle.com LLC, Monkey or OmeTV. Trademarks belong to their owners.</small>
+    </div>
+  </footer>
+
+  <script>
+    // Tiny landing-only script: theme toggle + online count + Esc/Enter -> /random/
+    (function () {
+      const _sw = (p) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+      const MOON = _sw(`<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`);
+      const SUN = _sw(`<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`);
+      function applyIcon() {
+        const btn = document.getElementById('themeToggle');
+        if (btn) btn.innerHTML = document.documentElement.getAttribute('data-theme') === 'dark' ? SUN : MOON;
+        const mi = document.getElementById('themeMenuIcon');
+        const ml = document.getElementById('themeMenuLabel');
+        const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+        if (mi) mi.innerHTML = dark ? SUN : MOON;
+        if (ml) ml.textContent = dark ? 'Light mode' : 'Dark mode';
+      }
+      function toggleTheme() {
+        const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        try { localStorage.setItem('webRcTheme', next); var m = document.getElementById('metaThemeColor'); if (m) m.setAttribute('content', next === 'dark' ? '#0c2226' : '#ffffff'); } catch { }
+        applyIcon();
+      }
+      applyIcon();
+      const tt = document.getElementById('themeToggle');
+      tt && tt.addEventListener('click', () => {
+        tt.classList.add('theme-toggle-spinning');
+        setTimeout(toggleTheme, 160);
+        setTimeout(() => tt.classList.remove('theme-toggle-spinning'), 360);
+      });
+      const ttm = document.getElementById('themeToggleMenu');
+      ttm && ttm.addEventListener('click', (e) => { e.stopPropagation(); toggleTheme(); });
+      const API = window.WEB_RC_API ?? '';
+      const oc = document.getElementById('onlineCount');
+      const ho = document.getElementById('heroOnline');
+      const STATS_REFRESH_MS = 10 * 60 * 1000;
+      const LEGACY_ANDROID_LIVE_FALLBACK = 5000;
+      function formatLegacyOnlineCount(value) {
+        const n = Math.max((Number(value) || 0) + LEGACY_ANDROID_LIVE_FALLBACK, 1);
+        if (n < 1000) return String(n);
+        return (n / 1000).toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1') + 'k';
+      }
+      async function fetchOnlineText() {
+        const textRes = await fetch(API + '/stats/online.txt');
+        if (textRes.ok) {
+          const text = (await textRes.text()).trim();
+          if (text) return text;
+        }
+        const jsonRes = await fetch(API + '/stats/global');
+        if (!jsonRes.ok) return '';
+        const json = await jsonRes.json();
+        return typeof json.total === 'number' ? formatLegacyOnlineCount(json.total) : '';
+      }
+      async function refresh() {
+        try {
+          const n = await fetchOnlineText();
+          if (n) {
+            if (oc) oc.textContent = n + ' online';
+            if (ho) ho.textContent = n;
+          }
+        } catch { }
+      }
+      refresh(); setInterval(refresh, STATS_REFRESH_MS);
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' || e.key === 'Enter') {
+          if (document.activeElement && ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+          const sc = document.getElementById('startCta');
+          if (sc) sc.click(); else window.location.href = '/video/';
+        }
+      });
+
+      // Mode selector: clicking a pill updates active state + CTA href + animation
+      (function () {
+        var sel = document.getElementById('modeSelect');
+        var cta = document.getElementById('startCta');
+        var stage = document.getElementById('modeAnimStage');
+        if (!sel || !cta) return;
+        cta.addEventListener('click', function () {
+          var active = sel.querySelector('.mode-btn.active');
+          window.OTAnalytics?.track('select_content', {
+            content_type: 'chat_mode',
+            item_id: active?.dataset.mode || 'video'
+          });
+        });
+        function setActiveAnim(mode) {
+          if (!stage) return;
+          stage.querySelectorAll('.m-anim').forEach(function (el) {
+            el.classList.toggle('active', el.dataset.anim === mode);
+          });
+        }
+        // Initial: pick whichever button starts with .active
+        var initial = sel.querySelector('.mode-btn.active');
+        if (initial) { setActiveAnim(initial.dataset.mode); cta.textContent = ({ text: 'Start Text Chat', voice: 'Start Voice Chat', video: 'Start Video Chat' }[initial.dataset.mode] || 'Start Chatting') + ' →'; }
+        sel.querySelectorAll('.mode-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            sel.querySelectorAll('.mode-btn').forEach(function (b) {
+              b.classList.remove('active'); b.setAttribute('aria-pressed', 'false');
+            });
+            btn.classList.add('active'); btn.setAttribute('aria-pressed', 'true');
+            cta.setAttribute('href', btn.dataset.href);
+            cta.textContent = ({ text: 'Start Text Chat', voice: 'Start Voice Chat', video: 'Start Video Chat' }[btn.dataset.mode] || 'Start Chatting') + ' →';
+            setActiveAnim(btn.dataset.mode);
+          });
+        });
+      })();
+
+      // ---------- Language picker + topbar scroll ----------
+      (function () {
+        var LANG_LABELS = { en: 'EN', es: 'ES', pt: 'PT', hi: 'HI', fr: 'FR', de: 'DE', ja: 'JA', ko: 'KO', ar: 'AR' };
+        var m = location.pathname.match(/^\/(es|pt|hi|fr|de|ja|ko|ar)\//);
+        var cur = m ? m[1] : 'en';
+        var btn = document.getElementById('langBtn');
+        var menu = document.getElementById('langMenu');
+        var lc = document.getElementById('langCode');
+        if (lc) lc.textContent = LANG_LABELS[cur] || 'EN';
+        if (menu) menu.querySelectorAll('a[data-lang]').forEach(function (a) {
+          if (a.dataset.lang === cur) a.classList.add('active');
+        });
+        function closeMenu() {
+          if (!btn || !menu) return;
+          btn.setAttribute('aria-expanded', 'false');
+          menu.classList.remove('open');
+        }
+        function openMenu() {
+          btn.setAttribute('aria-expanded', 'true');
+          menu.classList.add('open');
+          var f = menu.querySelector('a.active') || menu.querySelector('a');
+          if (f) setTimeout(function () { f.focus(); }, 20);
+        }
+        btn && btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          // Suppress geo language banner once user has found the picker
+          try { localStorage.setItem('ot_lang_dismissed_v1', '1'); } catch (err) { }
+          var geoBanner = document.getElementById('otLangBanner');
+          if (geoBanner) geoBanner.remove();
+          menu.classList.contains('open') ? closeMenu() : openMenu();
+        });
+        document.addEventListener('click', function (e) {
+          if (menu && menu.classList.contains('open') && !e.target.closest('#langPicker')) closeMenu();
+        });
+        menu && menu.addEventListener('focusout', function (e) {
+          if (!menu.contains(e.relatedTarget) && !btn.contains(e.relatedTarget)) closeMenu();
+        });
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape' && menu && menu.classList.contains('open')) { closeMenu(); btn && btn.focus(); }
+        });
+        // Topbar: border + shadow on scroll, brand shrinks
+        var tb = document.querySelector('.topbar-landing');
+        if (tb) {
+          var sc = function () { tb.classList.toggle('topbar-scrolled', window.scrollY > 30); };
+          window.addEventListener('scroll', sc, { passive: true });
+          sc();
+        }
+      })();
+
+      // ---------- Mobile hamburger menu (open/close) ----------
+      (function () {
+        var hb = document.getElementById('hamBtn');
+        var hm = document.getElementById('hamMenu');
+        if (!hb || !hm) return;
+        hb.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var open = !hm.hidden;
+          hm.hidden = open;
+          hb.setAttribute('aria-expanded', String(!open));
+        });
+        // Keep menu open when interacting inside it (e.g. theme toggle);
+        // language + links navigate away, so closing is naturally handled.
+        hm.addEventListener('click', function (e) {
+          if (!e.target.closest('a')) e.stopPropagation();
+        });
+        document.addEventListener('click', function () {
+          if (!hm.hidden) { hm.hidden = true; hb.setAttribute('aria-expanded', 'false'); }
+        });
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape' && !hm.hidden) { hm.hidden = true; hb.setAttribute('aria-expanded', 'false'); hb.focus(); }
+        });
+      })();
+
+    })();
+  </script>
+
+</body>
+
+</html>
