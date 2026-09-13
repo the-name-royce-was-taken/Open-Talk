@@ -1,0 +1,866 @@
+/* =========================================================================
+ * premium.js — shared premium / paywall module for opentalk-web.
+ *
+ * Designed once, reused for /text now and /video + /stationtalk next.
+ * Vanilla JS, no framework. Loaded as a classic <script defer> so it's
+ * available on the global as `window.OTPremium` for both the desktop
+ * controller and the mobile controller.
+ *
+ * Public surface (Object.freeze'd):
+ *   OTPremium.init({ apiBase, razorpayKey, onChange, source })
+ *   OTPremium.isPremium()                       -> boolean
+ *   OTPremium.getEntitlement()                  -> { expiresAt, plan, paymentId } | null
+ *   OTPremium.getPlans()                        -> [{ id, label, hours, priceInr }]
+ *   OTPremium.requireFeature(featureKey, opts)  -> Promise<boolean>
+ *      opens paywall if not entitled; resolves true after successful payment
+ *   OTPremium.openPaywall(opts)                 -> Promise<boolean>
+ *   OTPremium.refresh()                         -> Promise<entitlement|null>
+ *   OTPremium.onChange(cb)                      -> () => off
+ *
+ * Storage:
+ *   localStorage 'webRcPremium' = { expiresAt:number(ms), plan, paymentId }
+ *     mirrors what the server holds in Redis (key = anonId). Server is
+ *     authoritative; localStorage is just for instant UI gating.
+ *
+ * Feature keys (forward-compatible — server may or may not differentiate):
+ *   'gender_filter_text', 'gender_filter_video', 'stationtalk_premium'
+ * ========================================================================= */
+(function () {
+    'use strict';
+    if (window.OTPremium) return; // already loaded
+
+    // Cache is scoped per surface (webRcPremium:video / webRcPremium:text) so a
+    // text/stationtalk entitlement can never surface as video premium in the UI.
+    // The server (/web/premium/status?surface=) is always authoritative; this is
+    // only for instant gating and is refreshed on every page load.
+    function _lsKey() { return 'webRcPremium:' + _surface; }
+
+    // ---------- timezone → currency (client-only, instant, no network) ----------
+    // We decide INR vs USD from the browser's IANA timezone. Indian users
+    // (Asia/Kolkata / Asia/Calcutta) get ₹ pricing. Everyone else gets $.
+    // This is intentional and simple: no server round-trip, no geoip, no
+    // header chain, no race condition. Works the same on /text and /video.
+    const _INR_TIMEZONES = new Set([
+        'Asia/Kolkata',
+        'Asia/Calcutta',
+    ]);
+    function _detectCurrency() {
+        try {
+            const tz = (Intl.DateTimeFormat().resolvedOptions().timeZone || '').trim();
+            return _INR_TIMEZONES.has(tz) ? 'INR' : 'USD';
+        } catch { return 'USD'; }
+    }
+    function _detectCountry() {
+        return _detectCurrency() === 'INR' ? 'IN' : '';
+    }
+
+    // ---------- hardcoded plan catalogs (single source of truth, client-side) ----------
+    // Amount is in the smallest unit of the currency Razorpay expects:
+    //   INR → paise   (₹999  = 99900)
+    //   USD → cents   ($19.99 = 1999)
+    const VIDEO_PLANS_INR = [
+        { id: '1d', label: '1 Day', tagline: 'Try it out', durationSec: 86400, currency: 'INR', amount: 99900, display: '₹999' },
+        { id: '3d', label: '3 Days', tagline: 'Great deal', durationSec: 3 * 86400, currency: 'INR', amount: 199900, display: '₹1,999' },
+        { id: '7d', label: '7 Days', tagline: 'Most popular — best value', featured: true, durationSec: 7 * 86400, currency: 'INR', amount: 299900, display: '₹2,999' },
+    ];
+    const VIDEO_PLANS_USD = [
+        { id: '1d', label: '1 Day', tagline: 'Try it out', durationSec: 86400, currency: 'USD', amount: 1999, display: '$19.99' },
+        { id: '3d', label: '3 Days', tagline: 'Great deal', durationSec: 3 * 86400, currency: 'USD', amount: 3999, display: '$39.99' },
+        { id: '7d', label: '7 Days', tagline: 'Most popular — best value', featured: true, durationSec: 7 * 86400, currency: 'USD', amount: 5999, display: '$59.99' },
+    ];
+    const TEXT_PLANS_INR = [
+        { id: 'text_1h', label: '1 Hour', tagline: 'Quick chat boost', durationSec: 3600, currency: 'INR', amount: 19900, display: '₹199' },
+        { id: 'text_3h', label: '3 Hours', tagline: 'Best for long sessions', featured: true, durationSec: 10800, currency: 'INR', amount: 29900, display: '₹299' },
+        { id: 'text_1d', label: '1 Day', tagline: 'All-day access', durationSec: 86400, currency: 'INR', amount: 39900, display: '₹399' },
+    ];
+    const TEXT_PLANS_USD = [
+        { id: 'text_1h', label: '1 Hour', tagline: 'Quick chat boost', durationSec: 3600, currency: 'USD', amount: 398, display: '$3.98' },
+        { id: 'text_3h', label: '3 Hours', tagline: 'Best for long sessions', featured: true, durationSec: 10800, currency: 'USD', amount: 598, display: '$5.98' },
+        { id: 'text_1d', label: '1 Day', tagline: 'All-day access', durationSec: 86400, currency: 'USD', amount: 798, display: '$7.98' },
+    ];
+
+    function _pickPlans() {
+        const cur = _detectCurrency();
+        if (_surface === 'text') return (cur === 'INR' ? TEXT_PLANS_INR : TEXT_PLANS_USD).map((p) => ({ ...p }));
+        return (cur === 'INR' ? VIDEO_PLANS_INR : VIDEO_PLANS_USD).map((p) => ({ ...p }));
+    }
+
+    let _surface = (typeof window !== 'undefined' && window.WEB_RC_MODE === 'text') ? 'text' : 'video';
+    let _source = 'web';
+    let _planCurrency = _detectCurrency();
+    let PLANS = _pickPlans();
+    let _expiryTimer = null;
+
+    // Resolve _apiBase eagerly from the global config script that nginx
+    // serves at /p2p/config.js (loaded sync in <head>). Without this,
+    // a user who taps the paywall BEFORE chat.js completes /web/auth and
+    // calls OTPremium.init() would have _apiBase='', sending the POST to
+    // opentalk.club instead of rt.opentalk.club — which nginx serves as
+    // an HTML 404, breaking res.json() and silently dropping the checkout.
+    let _apiBase = (typeof window !== 'undefined' && window.WEB_RC_API) || '';
+    let _razorpayKey = (typeof window !== 'undefined' && window.OT_RAZORPAY_KEY) || '';
+    let _getAuthToken = null;            // () => string|null
+    let _getAnonId = null;            // () => string|null
+    let _getCountry = null;           // () => string|null
+    const _listeners = new Set();
+
+    function _resolveCountry() {
+        // Always trust timezone first (instant, deterministic). Then fall back
+        // to whatever the host page hands us. _detectCountry() returns 'IN'
+        // for Indian timezones and '' otherwise — which is the right signal
+        // for the backend: send 'IN' to lock INR currency, send '' to let the
+        // backend default to USD.
+        const tzCC = _detectCountry();
+        if (tzCC) return tzCC;
+        try {
+            const c = (_getCountry?.() || window.WEB_RC_CLIENT_COUNTRY || '').toString().trim().toUpperCase();
+            return /^[A-Z]{2}$/.test(c) ? c : '';
+        } catch {
+            return '';
+        }
+    }
+
+    // ---------- visible toast (used for checkout / restore errors) ----------
+    function _showToast(msg, opts) {
+        const o = opts || {};
+        const bg = o.kind === 'success' ? '#16a34a'
+            : o.kind === 'warn' ? '#d97706'
+                : '#dc2626';
+        const t = document.createElement('div');
+        t.className = 'otp-toast';
+        t.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);' +
+            'background:' + bg + ';color:#fff;padding:12px 20px;border-radius:999px;' +
+            'z-index:2147483647;font-weight:600;font-size:14px;line-height:1.3;' +
+            'box-shadow:0 8px 24px rgba(0,0,0,0.35);max-width:92vw;text-align:center;' +
+            'opacity:0;transition:opacity .2s ease;pointer-events:none;';
+        t.textContent = msg;
+        document.body.appendChild(t);
+        requestAnimationFrame(() => { t.style.opacity = '1'; });
+        setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 250); }, o.ms || 5000);
+    }
+
+    // ---------- storage / state ----------
+    function _read() {
+        try {
+            const raw = localStorage.getItem(_lsKey());
+            if (!raw) return null;
+            const o = JSON.parse(raw);
+            if (!o || typeof o.expiresAt !== 'number') return null;
+            if (o.expiresAt <= Date.now()) { localStorage.removeItem(_lsKey()); return null; }
+            return o;
+        } catch { return null; }
+    }
+    function _scheduleExpiryCheck(o) {
+        try {
+            if (_expiryTimer) clearTimeout(_expiryTimer);
+            _expiryTimer = null;
+            const ent = o || _read();
+            if (!ent?.expiresAt || ent.expiresAt <= Date.now()) return;
+            const delay = Math.max(250, ent.expiresAt - Date.now() + 50);
+            _expiryTimer = setTimeout(() => {
+                _expiryTimer = null;
+                const current = _read();
+                if (current?.expiresAt && current.expiresAt > Date.now()) {
+                    _scheduleExpiryCheck(current);
+                    return;
+                }
+                _emit();
+            }, delay);
+        } catch { }
+    }
+
+    function _write(o) {
+        try {
+            if (o && o.expiresAt > Date.now()) {
+                localStorage.setItem(_lsKey(), JSON.stringify(o));
+            } else {
+                localStorage.removeItem(_lsKey());
+            }
+        } catch { }
+        _scheduleExpiryCheck(o);
+        _emit();
+    }
+    function _emit() {
+        const ent = _read();
+        for (const cb of _listeners) { try { cb(ent); } catch { } }
+    }
+
+    // ---------- network ----------
+    function _resolveBase() {
+        // Late-bind in case window.WEB_RC_API arrived after module load.
+        if (!_apiBase && typeof window !== 'undefined' && window.WEB_RC_API) {
+            _apiBase = window.WEB_RC_API;
+        }
+        return _apiBase;
+    }
+
+    // ---------- payment browser session ----------
+    // Checkout uses a dedicated 24-hour session. It is deliberately separate
+    // from chat auth so premium buyers do not lose checkout state merely
+    // because the short-lived chat JWT expired.
+    const FP_KEY = 'webRcFp';
+    const OWN_TOKEN_KEY = 'webRcOwnTok';
+    let _ownToken = null;
+    let _ownTokenExp = 0;
+    let _ownTokenInflight = null;
+    let _refreshAuth = null;
+    function _stableFingerprint() {
+        try {
+            let fp = localStorage.getItem(FP_KEY);
+            if (fp && fp.length >= 16) return fp;
+            // Build a stable per-browser fingerprint. Crypto-quality not needed:
+            // server uses it only to rate-limit + key the visit row.
+            const rand = (typeof crypto !== 'undefined' && crypto.getRandomValues)
+                ? Array.from(crypto.getRandomValues(new Uint8Array(16)))
+                    .map((b) => b.toString(16).padStart(2, '0')).join('')
+                : (Date.now().toString(36) + Math.random().toString(36).slice(2)).padEnd(32, 'x');
+            fp = 'otp_' + rand.slice(0, 32);
+            try { localStorage.setItem(FP_KEY, fp); } catch { }
+            return fp;
+        } catch { return 'otp_' + Date.now().toString(36) + Math.random().toString(36).slice(2); }
+    }
+    function _readOwnToken() {
+        if (_ownToken && _ownTokenExp > Date.now() + 60_000) return _ownToken;
+        try {
+            const raw = localStorage.getItem(OWN_TOKEN_KEY);
+            if (raw) {
+                const o = JSON.parse(raw);
+                if (o?.token && o.expiresAt > Date.now() + 60_000) {
+                    _ownToken = o.token;
+                    _ownTokenExp = o.expiresAt;
+                    return _ownToken;
+                }
+            }
+        } catch { }
+        return null;
+    }
+    async function _mintOwnToken() {
+        if (_ownTokenInflight) return _ownTokenInflight;
+        // Allow empty base — that's the same-origin case (nginx proxies
+        // /web/* to the backend on opentalk.club). Only bail when we
+        // genuinely can't reach the network (no window/fetch).
+        const base = _resolveBase() || '';
+        if (typeof fetch !== 'function') return null;
+        const fp = _stableFingerprint();
+        _ownTokenInflight = (async () => {
+            try {
+                const res = await fetch(base + '/web/premium/session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fingerprint: fp,
+                        country: (window.WEB_RC_CLIENT_COUNTRY || '').toUpperCase(),
+                    }),
+                });
+                if (!res.ok) {
+                    console.warn('[premium] payment session failed', res.status);
+                    return null;
+                }
+                const j = await res.json().catch(() => null);
+                if (!j?.token) return null;
+                _ownToken = j.token;
+                _ownTokenExp = Date.now() + Math.max(60, (j.expiresIn || 900) - 60) * 1000;
+                try {
+                    localStorage.setItem(OWN_TOKEN_KEY, JSON.stringify({
+                        token: _ownToken, expiresAt: _ownTokenExp,
+                    }));
+                } catch { }
+                return _ownToken;
+            } catch (e) {
+                console.warn('[premium] own /web/auth threw', e?.message || e);
+                return null;
+            } finally {
+                _ownTokenInflight = null;
+            }
+        })();
+        return _ownTokenInflight;
+    }
+    async function _getAnyToken({ forceMint } = {}) {
+        // Order: host-page token (chat.js) > our own cached payment session.
+        if (!forceMint) {
+            try {
+                const hostTok = _getAuthToken?.();
+                if (hostTok) return hostTok;
+            } catch { }
+            const cached = _readOwnToken();
+            if (cached) return cached;
+        }
+        return await _mintOwnToken();
+    }
+    async function _request(method, path, body) {
+        const base = _resolveBase();
+        const url = base + path;
+        const doFetch = async (token) => {
+            const headers = method === 'POST' ? { 'Content-Type': 'application/json' } : {};
+            if (token) headers.Authorization = 'Bearer ' + token;
+            const ctrl = new AbortController();
+            const tmo = setTimeout(() => ctrl.abort(), 15000);
+            let res;
+            try {
+                res = await fetch(url, {
+                    method,
+                    headers,
+                    body: method === 'POST' ? JSON.stringify(body || {}) : undefined,
+                    signal: ctrl.signal,
+                });
+            } catch (e) {
+                clearTimeout(tmo);
+                throw new Error(e?.name === 'AbortError' ? 'timeout' : (e?.message || 'network'));
+            }
+            clearTimeout(tmo);
+            return res;
+        };
+
+        let token = await _getAnyToken();
+        let res = await doFetch(token);
+
+        // Retry once with the independent payment session after a short-lived
+        // chat JWT expires.
+        if (res.status === 401) {
+            console.warn('[premium] 401 on', path, '\u2014 refreshing payment session');
+            let fresh = null;
+            try {
+                fresh = await _mintOwnToken();
+            } catch { }
+            if (fresh && fresh !== token) {
+                res = await doFetch(fresh);
+            }
+        }
+
+        const ct = res.headers.get('content-type') || '';
+        if (!ct.includes('application/json')) {
+            const txt = await res.text().catch(() => '');
+            console.warn('[premium] non-json response from', url, 'status=', res.status, 'ct=', ct, 'body=', txt.slice(0, 120));
+            throw new Error('bad_response');
+        }
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({ error: 'network' }));
+            throw new Error(err.error || ('http_' + res.status));
+        }
+        return res.json();
+    }
+    async function _post(path, body) { return _request('POST', path, body); }
+    async function _get(path) { return _request('GET', path); }
+
+    // ---------- Razorpay SDK loader ----------
+    let _rzpLoading = null;
+    function loadRazorpay() {
+        if (window.Razorpay) return Promise.resolve(window.Razorpay);
+        if (_rzpLoading) return _rzpLoading;
+        _rzpLoading = new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = 'https://checkout.razorpay.com/v1/checkout.js';
+            s.async = true;
+            s.onload = () => resolve(window.Razorpay);
+            s.onerror = () => reject(new Error('rzp_load_failed'));
+            document.head.appendChild(s);
+        });
+        return _rzpLoading;
+    }
+
+    // ---------- Modal UI ----------
+    function _ensureRoot() {
+        // If the page is currently fullscreen (typical on video tile zoom),
+        // appending to <body> would render the modal under the fullscreen
+        // element. Either move into the fullscreen host, or exit fullscreen.
+        // Exiting is the simplest UX — modal then covers the whole page and
+        // restores the user's chrome (close button, payment SDK overlay, etc).
+        try {
+            const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+            if (fsEl) {
+                if (document.exitFullscreen) document.exitFullscreen().catch(() => { });
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            }
+        } catch { /* not supported */ }
+        let r = document.getElementById('otpPaywallRoot');
+        if (r) return r;
+        r = document.createElement('div');
+        r.id = 'otpPaywallRoot';
+        // Highest plausible z-index so we float above tile zoom shims,
+        // toast layers, hamburger menus, etc.
+        r.style.cssText = 'position:relative;z-index:2147483647;';
+        document.body.appendChild(r);
+        return r;
+    }
+
+    function _renderPaywall({ title, subtitle, featureKey, onPick, onClose }) {
+        const root = _ensureRoot();
+        // Per-day price gives buyers instant value confidence: the longer plan
+        // reads as the cheaper daily rate. Computed from the SAME amount already
+        // charged — we never change the price, only how it's framed.
+        const _perDay = (p) => {
+            const days = Math.max(1, Math.round((p.durationSec || 86400) / 86400));
+            const sym = (String(p.display).match(/^[^\d]+/) || [''])[0];
+            const per = (p.amount / 100) / days;
+            const perStr = p.currency === 'INR'
+                ? Math.round(per).toLocaleString('en-IN')
+                : per.toFixed(2);
+            return sym + perStr + '/day';
+        };
+        const planHtml = PLANS.map((p) => `
+            <button class="plan-card${p.featured ? ' featured' : ''}" data-plan="${p.id}" type="button">
+                ${p.featured ? '<span class="plan-tag">Best Value</span>' : ''}
+                <span class="plan-label">${p.label}</span>
+                <span class="plan-price">${p.display}</span>
+                <span class="plan-perday">${_perDay(p)}</span>
+            </button>
+        `).join('');
+        const featureLabel = featureKey === 'country_filter'
+            ? 'Country Filter'
+            : (featureKey === 'gender_filter' || featureKey === 'gender_filter_text')
+                ? 'Gender Filter'
+                : 'Premium Filters';
+        root.innerHTML = `
+            <div class="modal premium-modal showing" role="dialog" aria-modal="true" aria-label="Upgrade to premium">
+                <div class="modal-card premium-card">
+                    <div class="premium-grip" aria-hidden="true"></div>
+                    <button class="premium-close" data-otp-close aria-label="Close">&times;</button>
+                    <div class="premium-head">
+                        <div class="premium-crown">\u{1F451}</div>
+                        <h3>${title || 'Unlock ' + featureLabel}</h3>
+                        <p class="premium-sub">${subtitle || 'Match the exact strangers you want.'}</p>
+                    </div>
+                    <ul class="premium-perks">
+                        <li><span class="pk">\u2640\u2642</span> Gender</li>
+                        <li><span class="pk">\u{1F30D}</span> Region</li>
+                        <li><span class="pk">\u26A1</span> Priority</li>
+                        <li><span class="pk">\u{1F6AB}</span> No ads</li>
+                    </ul>
+                    <div class="premium-plans">${planHtml}</div>
+                    <div class="premium-foot">
+                        <span class="premium-secure">\u{1F512} Secured by Razorpay</span>
+                        <span class="dot" aria-hidden="true">\u00B7</span>
+                        <button class="premium-restore" data-otp-restore type="button">Restore purchase</button>
+                    </div>
+                    <div class="premium-restore-panel" data-otp-restore-panel hidden>
+                        <p>Enter the email or phone you used at checkout:</p>
+                        <input type="text" name="restore-contact" data-otp-restore-input placeholder="email@example.com or 9876543210" autocomplete="new-password" autocapitalize="none" spellcheck="false">
+                        <div class="prp-actions">
+                            <button class="prp-cancel" data-otp-restore-cancel type="button">Cancel</button>
+                            <button class="prp-submit" data-otp-restore-submit type="button">Restore</button>
+                        </div>
+                    </div>
+                    <div class="otp-loader" hidden><div class="otp-spin"></div><span>Opening checkout&hellip;</span></div>
+                </div>
+            </div>
+        `;
+        root.classList.add('otp-on');
+        // Two-frame deferred .open swap so the browser commits the initial
+        // off-screen styles (.showing) before transitioning to the final state.
+        // Without this, setting innerHTML + class atomically means the modal
+        // appears in its final position with no slide-up animation.
+        const _modalEl = root.querySelector('.premium-modal');
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            if (_modalEl && _modalEl.isConnected) {
+                _modalEl.classList.remove('showing');
+                _modalEl.classList.add('open');
+            }
+        }));
+
+        let _closing = false;
+        const close = (val) => {
+            if (_closing) return;
+            _closing = true;
+            const m = root.querySelector('.premium-modal');
+            if (m) {
+                m.classList.remove('open');
+                m.classList.add('closing');
+            }
+            // Match the slowest exit transition (.32s on .premium-card transform).
+            setTimeout(() => {
+                root.classList.remove('otp-on');
+                root.innerHTML = '';
+                onClose?.(val);
+            }, 320);
+        };
+        root.querySelectorAll('[data-otp-close]').forEach((el) =>
+            el.addEventListener('click', () => close(false))
+        );
+        // Backdrop click (.premium-modal itself) closes; clicks on the card don't bubble.
+        const overlay = root.querySelector('.premium-modal');
+        overlay?.addEventListener('click', (e) => { if (e.target === overlay) close(false); });
+        root.querySelectorAll('.plan-card').forEach((el) =>
+            el.addEventListener('click', () => {
+                const id = el.getAttribute('data-plan');
+                root.querySelector('.otp-loader')?.removeAttribute('hidden');
+                onPick(id, { close });
+            })
+        );
+        // Restore panel toggle.
+        const restoreBtn = root.querySelector('[data-otp-restore]');
+        const restorePanel = root.querySelector('[data-otp-restore-panel]');
+        const restoreInput = root.querySelector('[data-otp-restore-input]');
+        const restoreCancel = root.querySelector('[data-otp-restore-cancel]');
+        const restoreSubmit = root.querySelector('[data-otp-restore-submit]');
+        restoreBtn?.addEventListener('click', () => {
+            restorePanel?.removeAttribute('hidden');
+            restoreBtn.setAttribute('hidden', '');
+            if (restoreInput) restoreInput.value = '';
+            restoreInput?.focus();
+        });
+        restoreCancel?.addEventListener('click', () => {
+            restorePanel?.setAttribute('hidden', '');
+            restoreBtn?.removeAttribute('hidden');
+        });
+        restoreSubmit?.addEventListener('click', async () => {
+            const v = (restoreInput?.value || '').trim();
+            if (!v) {
+                _showToast('Enter the email or phone you used at checkout.', { kind: 'warn', ms: 3500 });
+                return;
+            }
+            // Strip any leftover error notes from previous attempts.
+            restorePanel.querySelectorAll('.prp-err').forEach((n) => n.remove());
+            restoreSubmit.textContent = 'Restoring\u2026';
+            restoreSubmit.disabled = true;
+            try {
+                await restore(v);
+                restoreSubmit.textContent = 'Restored \u2713';
+                _showToast('Premium restored \u2014 enjoy!', { kind: 'success', ms: 3500 });
+                setTimeout(() => close(true), 700);
+            } catch (e) {
+                const msg = String(e?.message || e || '');
+                console.warn('[premium] restore failed:', msg);
+                restoreSubmit.textContent = 'Restore';
+                restoreSubmit.disabled = false;
+                let human;
+                if (msg === 'invalid_contact') {
+                    human = 'Please enter a valid email or phone number.';
+                } else if (msg === 'not_found' || msg === 'http_404' || msg === 'restore_failed') {
+                    human = 'No active payment found for that email/phone. Double-check what you entered at checkout.';
+                } else if (msg === 'wrong_tier') {
+                    human = 'That payment unlocks text chat premium, not video premium. Video premium is a separate plan.';
+                } else if (msg === 'rate_limited' || msg === 'http_429') {
+                    human = 'Too many attempts. Please wait a few minutes and try again.';
+                } else if (msg === 'unauthorized' || msg === 'http_401') {
+                    human = 'Session expired — reload the page and try again.';
+                } else if (msg === 'timeout') {
+                    human = 'Restore timed out. Check your connection and try again.';
+                } else if (msg === 'bad_response') {
+                    human = 'Restore service unreachable. Please reload and try again.';
+                } else {
+                    human = 'Restore failed: ' + msg;
+                }
+                const err = document.createElement('div');
+                err.className = 'prp-err';
+                err.style.cssText = 'margin-top:8px;color:#ff8a9b;font-size:12px;line-height:1.4;';
+                err.textContent = human;
+                restorePanel.appendChild(err);
+                _showToast(human, { kind: 'error', ms: 5500 });
+            }
+        });
+        document.addEventListener('keydown', function esc(e) {
+            if (e.key === 'Escape') { document.removeEventListener('keydown', esc); close(false); }
+        });
+    }
+
+    /**
+     * Prepare a Razorpay checkout: hit /web/premium/create-order, load the
+     * Razorpay SDK, and return { open(): Promise<Entitlement> }. The caller
+     * is responsible for closing any UI it owns BEFORE invoking open() so
+     * Razorpay's modal isn't stacked behind another layer.
+     */
+    async function _prepareCheckout(planId) {
+        const plan = PLANS.find((p) => p.id === planId);
+        if (!plan) throw new Error('invalid_plan');
+        console.log('[premium] create-order \u2192 plan=' + plan.id);
+        const order = await _post('/web/premium/create-order', {
+            planId: plan.id,
+            featureKey: 'webrc_premium',
+            surface: _surface,
+            source: _source,
+            country: _resolveCountry(),
+        });
+        console.log('[premium] order created', order.orderId, order.currency);
+        const Razorpay = await loadRazorpay();
+        console.log('[premium] Razorpay SDK loaded');
+        return {
+            open() {
+                return new Promise((resolve, reject) => {
+                    let rzp;
+                    try {
+                        const _ccy = (order.currency || plan.currency || 'INR').toUpperCase();
+                        // Razorpay classifies PayPal as a WALLET. For INR orders
+                        // `wallet` = Indian wallets (no PayPal), but for USD /
+                        // international orders the only available wallet IS
+                        // PayPal. The PayPal gateway is failing on every attempt,
+                        // so for non-INR currencies we whitelist card-only and
+                        // deliberately DROP `wallet` to exclude PayPal. INR keeps
+                        // the full method set. Restore `wallet` for USD to
+                        // re-enable PayPal once the gateway is fixed.
+                        const _instruments = _ccy === 'INR'
+                            ? [
+                                { method: 'card' },
+                                { method: 'upi' },
+                                { method: 'netbanking' },
+                                { method: 'wallet' },
+                            ]
+                            : [
+                                { method: 'card' },
+                            ];
+                        rzp = new Razorpay({
+                            key: order.key || _razorpayKey,
+                            order_id: order.orderId,
+                            amount: order.amount,
+                            currency: order.currency || plan.currency || 'INR',
+                            name: 'OpenTalk Premium',
+                            description: plan.label + ' \u2014 unlocks gender + country filters',
+                            image: '/images/opentalk.webp',
+                            theme: { color: '#228891' },
+                            // Whitelist only the instruments we want via
+                            // display.blocks + show_default_blocks:false — this
+                            // renders ONLY the listed methods and excludes
+                            // everything else (including PayPal). See the
+                            // currency-aware `_instruments` note above.
+                            config: {
+                                display: {
+                                    blocks: {
+                                        primary: {
+                                            name: 'Pay using',
+                                            instruments: _instruments,
+                                        },
+                                    },
+                                    sequence: ['block.primary'],
+                                    preferences: { show_default_blocks: false },
+                                },
+                            },
+                            prefill: {},
+                            notes: { plan: plan.id, anonId: _getAnonId?.() || '' },
+                            modal: {
+                                ondismiss: () => reject(new Error('user_cancelled')),
+                            },
+                            handler: async (resp) => {
+                                try {
+                                    const grant = await _post('/web/premium/verify', {
+                                        orderId: resp.razorpay_order_id,
+                                        paymentId: resp.razorpay_payment_id,
+                                        signature: resp.razorpay_signature,
+                                        planId: plan.id,
+                                        surface: _surface,
+                                    });
+                                    const ent = {
+                                        expiresAt: grant.expiresAt,
+                                        plan: grant.plan || plan.id,
+                                        paymentId: resp.razorpay_payment_id,
+                                    };
+                                    _write(ent);
+                                    try { refresh(); } catch { }
+                                    // Surface a success toast and broadcast event;
+                                    // do NOT auto-flip wantGender so the user gets
+                                    // to pick female/male/anyone themselves.
+                                    try {
+                                        window.dispatchEvent(new CustomEvent('ot:premium-activated', {
+                                            detail: {
+                                                plan: ent.plan,
+                                                expiresAt: ent.expiresAt,
+                                                transactionId: order.orderId,
+                                                currency: order.currency || plan.currency || 'INR',
+                                                value: Number(order.amount || 0) / 100,
+                                                surface: _surface,
+                                            },
+                                        }));
+                                    } catch { }
+                                    try {
+                                        const t = document.createElement('div');
+                                        t.className = 'otp-err';
+                                        t.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#16a34a;color:#fff;padding:10px 18px;border-radius:999px;z-index:99999;font-weight:600;';
+                                        t.textContent = 'Premium activated \u2014 filters unlocked!';
+                                        document.body.appendChild(t);
+                                        setTimeout(() => t.remove(), 4500);
+                                    } catch { }
+                                    resolve(ent);
+                                } catch (e) { reject(e); }
+                            },
+                        });
+                    } catch (e) {
+                        console.error('[premium] Razorpay init failed', e);
+                        reject(new Error('rzp_init_failed: ' + (e?.message || e)));
+                        return;
+                    }
+                    rzp.on('payment.failed', (resp) => {
+                        reject(new Error(resp?.error?.description || 'payment_failed'));
+                    });
+                    try {
+                        rzp.open();
+                        console.log('[premium] rzp.open() called');
+                    } catch (e) {
+                        console.error('[premium] rzp.open() threw', e);
+                        reject(new Error('rzp_open_failed: ' + (e?.message || e)));
+                    }
+                });
+            },
+        };
+    }
+
+    // ---------- Public API ----------
+    function init(opts) {
+        _apiBase = opts?.apiBase || window.WEB_RC_API || '';
+        _razorpayKey = opts?.razorpayKey || window.OT_RAZORPAY_KEY || '';
+        _surface = (opts?.surface === 'text' || window.WEB_RC_MODE === 'text') ? 'text' : 'video';
+        _source = (opts?.source || window.WEB_RC_SOURCE || 'web').toString();
+        // Currency is decided client-side from the browser's IANA timezone.
+        // India timezones \u2192 INR plans, everyone else \u2192 USD plans. No
+        // server round-trip, no race, no header chain, no geoip dependency.
+        PLANS = _pickPlans();
+        _planCurrency = _detectCurrency();
+        _getAuthToken = typeof opts?.getAuthToken === 'function' ? opts.getAuthToken : null;
+        _refreshAuth = typeof opts?.refreshAuth === 'function' ? opts.refreshAuth : null;
+        _getAnonId = typeof opts?.getAnonId === 'function' ? opts.getAnonId : null;
+        _getCountry = typeof opts?.getCountry === 'function' ? opts.getCountry : null;
+        if (opts?.onChange) _listeners.add(opts.onChange);
+        _scheduleExpiryCheck();
+        // Warm up the /web/auth token, then immediately revalidate entitlement
+        // server-side for THIS surface (Redis + TTL). This is what keeps /video,
+        // /text and /stationtalk accurate on every load instead of trusting a
+        // cache that could be copied/abused across surfaces.
+        _getAnyToken().then(() => refresh()).catch(() => { });
+    }
+    async function _fetchPlans() {
+        // Plans are decided client-side from timezone. This function is kept
+        // as a no-op so existing call sites (refresh, etc.) don't break.
+        PLANS = _pickPlans();
+        _planCurrency = _detectCurrency();
+    }
+    function isPremium() {
+        return !!_read();
+    }
+    function getEntitlement() {
+        return _read();
+    }
+    function getPlans() {
+        return PLANS.map((p) => ({ ...p }));
+    }
+    function getCurrency() { return _planCurrency; }
+    function onChange(cb) {
+        _listeners.add(cb);
+        return () => _listeners.delete(cb);
+    }
+    async function refresh() {
+        try {
+            // Server-authoritative, surface-scoped revalidation against Redis (with
+            // TTL). _get() mints its own /web/auth token when the host page hasn't,
+            // so this works on every surface load — we never trust the cache alone.
+            _fetchPlans().catch(() => { });
+            const s = await _get('/web/premium/status?surface=' + encodeURIComponent(_surface));
+            if (s?.expiresAt && s.expiresAt > Date.now()) {
+                _write({ expiresAt: s.expiresAt, plan: s.plan || '', paymentId: s.paymentId || '' });
+            } else if (_read()) {
+                _write(null);
+            }
+            _scheduleExpiryCheck();
+        } catch { /* keep local */ }
+        return _read();
+    }
+    function openPaywall(opts) {
+        return new Promise((resolve) => {
+            _renderPaywall({
+                title: opts?.title,
+                subtitle: opts?.subtitle,
+                featureKey: opts?.featureKey || 'gender_filter_text',
+                onPick: async (planId, { close }) => {
+                    try {
+                        // 1. Hit backend + load Razorpay SDK WHILE the paywall
+                        //    is still up (so the "Opening checkout..." loader
+                        //    explains the 0.5\u20131s delay).
+                        const checkout = await _prepareCheckout(planId);
+                        // 2. Close the paywall BEFORE handing the screen to
+                        //    Razorpay. Stacking Razorpay's iframe behind our
+                        //    own modal is what made the loader look "stuck".
+                        close(false);
+                        // 3. Now open Razorpay full-screen.
+                        const ent = await checkout.open();
+                        resolve(!!ent);
+                    } catch (e) {
+                        const msg = String(e?.message || e || '');
+                        console.warn('[premium] checkout aborted:', msg);
+                        const root = document.getElementById('otpPaywallRoot');
+                        const loader = root?.querySelector('.otp-loader');
+                        if (loader) loader.setAttribute('hidden', '');
+                        if (msg !== 'user_cancelled') {
+                            // Map known backend / network errors to friendlier copy.
+                            let human;
+                            if (msg === 'timeout' || msg.startsWith('rzp_load_failed')) {
+                                human = 'Checkout failed — please check your internet and try again.';
+                            } else if (msg === 'unauthorized' || msg === 'http_401') {
+                                human = 'Session expired — please reload the page and try again.';
+                            } else if (msg === 'invalid_plan') {
+                                human = 'That plan is no longer available.';
+                            } else if (msg === 'bad_response') {
+                                human = 'Checkout service unreachable — please reload and retry.';
+                            } else if (msg.startsWith('rzp_init_failed') || msg.startsWith('rzp_open_failed')) {
+                                human = 'Could not open Razorpay checkout. Please disable any ad/popup blocker and retry.';
+                            } else {
+                                human = 'Payment failed: ' + msg;
+                            }
+                            _showToast(human, { kind: 'error', ms: 6000 });
+                        }
+                        resolve(false);
+                    }
+                },
+                onClose: (ok) => resolve(!!ok),
+            });
+        });
+    }
+    async function requireFeature(featureKey, opts) {
+        if (isPremium()) return true;
+        return openPaywall({ ...(opts || {}), featureKey });
+    }
+
+    /**
+     * Cross-device restore: POST the email or phone the user gave Razorpay
+     * during checkout. The backend looks up the latest active entitlement
+     * indexed against that contact and grants the remaining time to the
+     * current anonId. Returns { ok: true, expiresAt, plan } on success.
+     */
+    async function restore(contact) {
+        const c = (contact || '').trim();
+        if (!c) throw new Error('empty_contact');
+        // _post throws on non-2xx with the backend's `error` string
+        // (e.g. 'not_found', 'rate_limited', 'invalid_contact') so the caller
+        // can map it to friendly copy. The success path writes localStorage
+        // and fires onChange so the UI updates immediately.
+        const res = await _post('/web/premium/restore', { contact: c, surface: _surface });
+        if (res?.ok && res.expiresAt > Date.now()) {
+            // Tier guard (defense-in-depth; the server already enforces this and
+            // returns 409 'wrong_tier' for a text receipt on /video). Video tier
+            // covers every surface; text tier only covers /text + /stationtalk.
+            const tier = res.tier || 'video';
+            const coversSurface = tier === 'video' || _surface === 'text';
+            if (!coversSurface) throw new Error('wrong_tier');
+            _write({ expiresAt: res.expiresAt, plan: res.plan || '', restored: true });
+            console.log('[premium] restored, expires=', new Date(res.expiresAt).toISOString());
+            return res;
+        }
+        throw new Error('restore_failed');
+    }
+
+    /**
+     * Direct checkout for a single plan — skips the built-in paywall UI and
+     * goes straight to Razorpay. Used by surfaces (e.g. StationTalk) that ship
+     * their own teaser modal but want the same tested create-order → SDK →
+     * verify → entitlement pipeline. Resolves the entitlement on success,
+     * rejects with 'user_cancelled' / 'payment_failed' / backend error codes.
+     */
+    async function checkout(planId) {
+        const id = planId || (PLANS.find((p) => p.featured) || PLANS[0])?.id;
+        const prepared = await _prepareCheckout(id);
+        return prepared.open();
+    }
+
+    window.OTPremium = Object.freeze({
+        init, isPremium, getEntitlement, getPlans, getCurrency,
+        requireFeature, openPaywall, checkout, restore, refresh, onChange,
+    });
+
+    // Auto-warmup: initialize local plans even if the host page
+    // never explicitly calls init() (defensive — /text and /video both call
+    // init, but this guarantees the paywall works even on pages that just
+    // drop the script in). Runs LATE so the host page's init() has a chance
+    // to override _apiBase first — otherwise /video would warm against
+    // rt.opentalk.club (Caddy TCP passthrough, no X-Forwarded-For) and
+    // cache USD pricing before init() can repoint it same-origin.
+    setTimeout(() => {
+        try {
+            _fetchPlans().catch(() => { });
+        } catch { }
+    }, 1500);
+})();
