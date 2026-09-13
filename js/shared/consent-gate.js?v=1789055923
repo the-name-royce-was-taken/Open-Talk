@@ -1,0 +1,153 @@
+/* ==========================================================================
+    LANDING-PAGE 18+ CONSENT GATE  —  /js/shared/consent-gate.js
+   --------------------------------------------------------------------------
+    A single, self-contained, framework-free module that collects consent once
+    on the landing page before users enter an interactive surface.
+
+   Legal design goals (drafted to be defensible across jurisdictions — notably
+   US COPPA / 18 U.S.C. 2257 recordkeeping context, EU DSA, and general
+   contract-formation "clickwrap" standards):
+     1. 18+ affirmation — the user must actively confirm adulthood.
+     2. No-PII covenant — the user agrees not to share personal information
+        (their own or anyone else's).
+     3. Liability disclaimer — the platform is not liable for a user's misuse
+        of any information encountered on the service.
+   Consent is affirmative (a pre-UNCHECKED box the user must tick), the "Enter"
+   action is disabled until the box is ticked, and refusal denies access.
+
+   Self-injects its own stylesheet so a page only needs ONE tag:
+       <script defer src="/js/shared/consent-gate.js?v=..."></script>
+
+   No external dependencies. Vanilla only (per site hard-rules).
+   ========================================================================== */
+(function () {
+    'use strict';
+
+    // Bump this version string to force EVERY user to re-consent (e.g. after a
+    // material change to the terms). Acceptance is keyed per version.
+    var CONSENT_VERSION = 'v3';
+    var STORE_KEY = 'webRcConsent_' + CONSENT_VERSION;
+    var LEAVE_URL = '/';
+
+    function ls(get, key, val) {
+        try { return get ? localStorage.getItem(key) : localStorage.setItem(key, val); }
+        catch (_) { return null; }
+    }
+
+    function hasConsented() {
+        return ls(true, STORE_KEY) === '1';
+    }
+
+    // Mark every downstream/legacy adulthood flag so existing app flows that
+    // still read them (beginFlow(), old gate logic) pass without re-prompting.
+    function persistConsent() {
+        ls(false, STORE_KEY, '1');
+        ls(false, 'webRcAdult', '1');
+        ls(false, 'webRcAgeGateAccepted', '1');
+        ls(false, 'webRcAge18Confirmed', '1');
+        document.cookie = 'webRcConsent=' + encodeURIComponent(CONSENT_VERSION)
+            + '; Max-Age=31536000; Path=/; Secure; SameSite=Lax';
+        try { ls(false, 'webRcConsentAt', String(Date.now())); } catch (_) { }
+    }
+
+    // Neutralise the old dormant "#ageGateOverlay" so we never double-stack.
+    function killLegacyGate() {
+        var legacy = document.getElementById('ageGateOverlay');
+        if (legacy && legacy.parentNode) legacy.parentNode.removeChild(legacy);
+    }
+
+    function injectStyles() {
+        if (document.getElementById('cg-style-link')) return;
+        var link = document.createElement('link');
+        link.id = 'cg-style-link';
+        link.rel = 'stylesheet';
+        link.href = '/css/shared/consent-gate.css?v=2';
+        (document.head || document.documentElement).appendChild(link);
+    }
+
+    function lockScroll(on) {
+        var el = document.documentElement, b = document.body;
+        if (on) { el.classList.add('cg-locked'); if (b) b.classList.add('cg-locked'); }
+        else { el.classList.remove('cg-locked'); if (b) b.classList.remove('cg-locked'); }
+    }
+
+    function buildGate() {
+        var overlay = document.createElement('div');
+        overlay.className = 'cg-overlay';
+        overlay.id = 'cgOverlay';
+        overlay.setAttribute('role', 'dialog');
+        overlay.setAttribute('aria-modal', 'true');
+        overlay.setAttribute('aria-labelledby', 'cgTitle');
+
+        overlay.innerHTML =
+            '<div class="cg-modal">' +
+            '<div class="cg-badge" aria-hidden="true">18+</div>' +
+            '<h1 id="cgTitle" class="cg-title">Before you continue</h1>' +
+            '<p class="cg-sub">Adults only. Please confirm once to continue.</p>' +
+            '<label class="cg-consent" id="cgConsent">' +
+            '<input type="checkbox" id="cgCheck" aria-describedby="cgTitle">' +
+            '<span class="cg-consent-text">I am 18+, I will not share personal information, I am responsible for how I use any information shared here, and I agree to the <a href="/terms.html" target="_blank" rel="noopener">Terms</a> and <a href="/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</span>' +
+            '</label>' +
+            '<div class="cg-actions">' +
+            '<button type="button" class="cg-btn cg-btn-enter" id="cgEnter" disabled>Continue</button>' +
+            '<button type="button" class="cg-btn cg-btn-leave" id="cgLeave">Leave</button>' +
+            '</div>' +
+            '</div>';
+
+        return overlay;
+    }
+
+    function mount() {
+        if (location.pathname !== '/') return;
+        injectStyles();
+        killLegacyGate();
+
+        if (hasConsented()) return; // already accepted this version
+
+        var overlay = buildGate();
+        document.body.appendChild(overlay);
+        lockScroll(true);
+
+        var check = overlay.querySelector('#cgCheck');
+        var wrap = overlay.querySelector('#cgConsent');
+        var enter = overlay.querySelector('#cgEnter');
+        var leave = overlay.querySelector('#cgLeave');
+
+        function sync() {
+            var ok = !!check.checked;
+            enter.disabled = !ok;
+            wrap.classList.toggle('cg-checked', ok);
+        }
+        check.addEventListener('change', sync);
+        sync();
+
+        enter.addEventListener('click', function () {
+            if (!check.checked) { sync(); return; }
+            persistConsent();
+            try { window.dispatchEvent(new CustomEvent('opentalk:consent-granted')); } catch (_) { }
+            lockScroll(false);
+            if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+        });
+
+        leave.addEventListener('click', function () {
+            window.location.href = LEAVE_URL;
+        });
+
+        // Block dismissal: no backdrop-close, no Esc-close. Consent is mandatory.
+        overlay.addEventListener('click', function (e) {
+            if (e.target === overlay) e.stopPropagation();
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && document.getElementById('cgOverlay')) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        }, true);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', mount, { once: true });
+    } else {
+        mount();
+    }
+})();
